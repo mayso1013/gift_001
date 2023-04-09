@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+
+<html>
+
+  <head>
+
+    <meta charset="UTF-8">
+
+    <title>멜론 차트 보내기</title>
+
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+
+  </head>
+
+  <body>
+
+    <button onclick="sendKakaoLink()">멜론 차트 보내기</button>
+
+    <script>
+
+      // 멜론 차트 보내기 함수
+
+      function sendKakaoLink() {
+
+        // 멜론 차트 API를 이용하여 곡 정보를 가져옵니다.
+
+        fetch('https://www.melon.com/chart/index.htm').then(response => {
+
+          if (response.ok) {
+
+            response.text().then(html => {
+
+              const parser = new DOMParser();
+
+              const doc = parser.parseFromString(html, 'text/html');
+
+              const songs = doc.querySelectorAll('#frm table tbody tr[data-song-no]');
+
+              const songList = [];
+
+              songs.forEach(song => {
+
+                const songNo = song.getAttribute('data-song-no');
+
+                const title = song.querySelector('.ellipsis.rank01 a').textContent;
+
+                const artist = song.querySelector('.ellipsis.rank02 a').textContent;
+
+                songList.push({ songNo, title, artist });
+
+              });
+
+              // 카카오링크로 곡 정보를 전달합니다.
+
+              Kakao.Link.sendDefault({
+
+                objectType: 'feed',
+
+                content: {
+
+                  title: '멜론 차트 1위~10위',
+
+                  description: songList.map((song, index) => `${index + 1}. ${song.title} - ${song.artist}`).join('\n'),
+
+                  imageUrl: 'https://cdnimg.melon.co.kr/resource/image/web/common/logo_melon.png',
+
+                  link: {
+
+                    webUrl: 'https://www.melon.com/chart/index.htm',
+
+                    mobileWebUrl: 'https://www.melon.com/chart/index.htm',
+
+                  },
+
+                },
+
+              });
+
+            });
+
+          }
+
+        });
+
+      }
+
+    </script>
+
+  </body>
+
+</html>
+
